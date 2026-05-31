@@ -1,0 +1,12 @@
+numpy
+tensorflow
+keras
+pyttsx3
+gtts
+playsound
+flask
+pillow
+flask_cors
+pandas
+scikit-learn
+gunicorn

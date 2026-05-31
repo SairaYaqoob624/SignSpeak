@@ -1,0 +1,32 @@
+# Virtual Environment
+venv310/
+venv/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary Database / Logs
+*.db-journal
+migrate_dataset.py
+scratch/
+backup/
+signspeak/backup/
+*.h5

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignSpeak - AI Sign Language Translator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MediaPipe JS SDK for Client-Side Hand Landmark Detection -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <i class="fas fa-hands"></i>
+            <h1>SignSpeak</h1>
+        </div>
+        <div class="header-center">
+            <p class="tagline">AI-Powered Sign Language to Speech Translation</p>
+        </div>
+        <div class="header-right">
+            <div id="userProfile" style="display: none; align-items: center; gap: 15px; margin-right: 15px;">
+                <span id="displayUsername" style="color: #4cc9f0; font-weight: 600;"></span>
+                <button class="btn-logout" id="logoutBtn" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+            <button class="btn-analytics-header" id="openAnalyticsModal" style="display: none;">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </button>
+            <button class="btn-train-header" id="openTrainModal">
+                <i class="fas fa-microchip"></i>
+                <span>Train New Gesture</span>
+                <span class="pro-badge">PRO</span>
+            </button>
+        </div>
+    </header>
+
+    
+    <div class="container">
+        <div class="app-grid">
+            <div class="camera-panel">
+                <h2 class="section-title">
+                    <i class="fas fa-video"></i>
+                    Live Video Preview
+                </h2>
+
+                <div class="video-container">
+                    <img id="videoFeed" style="width:100%; height:100%; border-radius:15px; display:none;" />
+                    <video id="webcamVideo" autoplay playsinline style="width:100%; height:100%; border-radius:15px; display:none; object-fit: cover; transform: scaleX(-1);"></video>
+                    <canvas id="landmarkCanvas" style="position: absolute; top:0; left:0; width:100%; height:100%; border-radius:15px; display:none; pointer-events: none; transform: scaleX(-1); z-index: 10;"></canvas>
+
+                    <div class="video-placeholder">
+                        <i class="fas fa-camera"></i>
+                        <p>Camera Feed Will Appear Here</p>
+                    </div>
+
+                    <div class="detection-status">
+                        <div class="status-light"></div>
+                        <span>Ready to Detect</span>
+                    </div>
+                </div>
+
+                <div class="detection-results">
+                    <div class="detected-text" id="detectedText">
+                        Show Gesture Here
+                    </div>
+
+                    <div class="speech-output">
+                        <i class="fas fa-volume-up"></i>
+                        <span>Speech output will appear here</span>
+                    </div>
+                </div>
+
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="startCamera">
+                        <i class="fas fa-camera"></i> Start Camera
+                    </button>
+                    <button class="btn btn-secondary" id="muteBtn">
+                        <i class="fas fa-volume-up"></i> Mute Speech
+                    </button>
+                    <button class="btn btn-danger" id="resetBtn">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                    <button class="btn btn-speak" id="speakNowBtn">
+                        <i class="fas fa-play"></i> Speak Now
+                    </button>
+
+                </div>
+
+                
+                <div class="sentence-builder-panel">
+                    <h3 class="sb-title">
+                        <i class="fas fa-brain"></i> Sentence Builder
+                        <span class="sb-badge">NEW</span>
+                    </h3>
+
+                    <div class="sb-current-word-row">
+                        <div class="sb-current-label">Current Gesture:</div>
+                        <div class="sb-current-word" id="sbCurrentWord">—</div>
+                        <button class="sb-add-btn" id="sbAddWord">
+                            <i class="fas fa-plus-circle"></i> Add Word
+                        </button>
+                    </div>
+
+                    <div class="sb-sentence-box">
+                        <div class="sb-sentence-label">
+                            <i class="fas fa-align-left"></i> Built Sentence:
+                        </div>
+                        <div class="sb-sentence-text" id="sbSentenceText">
+                            Words will appear here…
+                        </div>
+                        <div class="sb-word-chips" id="sbWordChips"></div>
+                    </div>
+
+                    <div class="sb-actions">
+                        <button class="sb-btn sb-speak-btn" id="sbSpeak">
+                            <i class="fas fa-volume-up"></i> Speak Sentence
+                        </button>
+                        <button class="sb-btn sb-undo-btn" id="sbUndo">
+                            <i class="fas fa-undo"></i> Undo
+                        </button>
+                        <button class="sb-btn sb-clear-btn" id="sbClear">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="sidebar">
+                
+                <div class="quick-phrases">
+                    <h3><i class="fas fa-bolt"></i> Quick Phrases</h3>
+                    <div class="phrase-grid">
+                        <button class="phrase-btn" data-text="Hello">Hello</button>
+                        <button class="phrase-btn" data-text="Thank You">Thank You</button>
+                        <button class="phrase-btn" data-text="Yes">Yes</button>
+                        <button class="phrase-btn" data-text="No">No</button>
+                        <button class="phrase-btn" data-text="Help">Help</button>
+                        <button class="phrase-btn" data-text="Please">Please</button>
+                        <button class="phrase-btn" data-text="Sorry">Sorry</button>
+                        <button class="phrase-btn" data-text="Goodbye">Goodbye</button>
+                    </div>
+                </div>
+
+                
+                <div class="history-panel">
+                    <h3><i class="fas fa-history"></i> Recent Gestures</h3>
+                    <div class="history-list" id="historyList">
+                        <div class="empty-history">No gestures detected yet</div>
+                    </div>
+                </div>
+
+                
+                <div class="settings-panel">
+                    <h3><i class="fas fa-magic"></i> Smart Auto-Speak</h3>
+
+                    
+                    <div class="setting-item">
+                        <label>Auto-Speak Mode:</label>
+                        <div class="mode-buttons" id="modeButtons">
+                            <button class="mode-btn" id="modeOff" data-mode="off">
+                                <i class="fas fa-volume-mute"></i> Off
+                            </button>
+                            <button class="mode-btn mode-active" id="modeSmart" data-mode="smart">
+                                <i class="fas fa-brain"></i> Smart
+                            </button>
+                            <button class="mode-btn" id="modeInstant" data-mode="instant">
+                                <i class="fas fa-bolt"></i> Instant
+                            </button>
+                        </div>
+                    </div>
+
+                    
+                    <div class="mode-description" id="modeDescription">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="modeDescText">Hold gesture for 2s → auto speak</span>
+                    </div>
+
+                    
+                    <div class="hold-progress-wrap" id="holdProgressWrap">
+                        <div class="hold-progress-label">
+                            <span>Hold Progress</span>
+                            <span id="holdTimerText">0.0s</span>
+                        </div>
+                        <div class="hold-progress-track">
+                            <div class="hold-progress-fill" id="holdProgressFill"></div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="setting-item">
+                        <label>
+                            Min Confidence: <strong id="confValue">70%</strong>
+                        </label>
+                        <div class="slider-wrap">
+                            <span class="slider-label-left">50%</span>
+                            <input type="range" id="confThreshold" min="50" max="95" value="70" step="5">
+                            <span class="slider-label-right">95%</span>
+                        </div>
+                    </div>
+
+                    
+                    <div class="setting-item">
+                        <label>Speech Speed:</label>
+                        <select id="speechSpeed">
+                            <option value="0.7">🐢 Slow</option>
+                            <option value="0.9" selected>▶ Normal</option>
+                            <option value="1.1">⚡ Fast</option>
+                        </select>
+                    </div>
+
+                    
+                    <input type="checkbox" id="autoSpeak" checked style="display:none">
+
+                    
+                    <div class="speak-status-badge" id="speakStatusBadge">
+                        <div class="status-dot status-smart"></div>
+                        <span id="speakStatusText">Smart Mode Active</span>
+                    </div>
+                </div>
+
+                
+                <div class="instructions">
+                    <h3><i class="fas fa-info-circle"></i> How to Use</h3>
+                    <ul>
+                        <li>Click "Start Camera" to begin</li>
+                        <li>Show hand gestures clearly in camera</li>
+                        <li>System will detect and speak automatically</li>
+                        <li>Use quick phrases for immediate speech</li>
+                        <li>Check history for recent gestures</li>
+                    </ul>
+                </div>
+            </div>
+
+            
+            <footer>
+                <div class="footer-content">
+                    <p>&copy; 2025 SignSpeak - AI Sign Language Translator</p>
+                </div>
+            </footer>
+
+            
+            <div class="modal-overlay" id="trainModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-brain"></i> Custom Gesture Training</h2>
+                        <button class="modal-close" id="closeTrainModal">&times;</button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <p class="modal-hint">Teach the AI a new gesture in seconds! Enter the name, hit record, and perform the gesture 100 times.</p>
+                        
+                        <div class="train-form">
+                            <div class="form-group">
+                                <label for="newGestureName">Gesture Name:</label>
+                                <input type="text" id="newGestureName" placeholder="e.g. Peace, Rocket, Love..." maxlength="20">
+                            </div>
+                            
+                            <div class="train-controls">
+                                <button class="btn-record-start" id="startRecordingBtn">
+                                    <i class="fas fa-circle"></i> Start Recording
+                                </button>
+                                <button class="btn-train-now" id="trainAINowBtn" disabled>
+                                    <i class="fas fa-bolt"></i> Retrain AI Model
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="recording-progress-section" id="recordingProgressWrap" style="display: none;">
+                            <div class="progress-info">
+                                <span id="recordingStatus">Recording 100 frames...</span>
+                                <span id="framesCount">0/100</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="recordProgressBar"></div>
+                            </div>
+                            <div class="recording-indicator">
+                                <div class="pulse"></div>
+                                <span>Camera capturing landmarks...</span>
+                            </div>
+                        </div>
+
+                        <div class="training-status-log" id="trainingLog">
+                            <div class="log-entry info">Ready to train...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="modal-overlay" id="analyticsModal">
+                <div class="modal-content analytics-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-user-shield"></i> Admin Control Center</h2>
+                        <button class="modal-close" id="closeAnalyticsModal">&times;</button>
+                    </div>
+
+                    
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" data-tab="overview">
+                            <i class="fas fa-chart-pie"></i> Overview
+                        </button>
+                        <button class="admin-tab" data-tab="users">
+                            <i class="fas fa-users-cog"></i> Users
+                        </button>
+                        <button class="admin-tab" data-tab="system">
+                            <i class="fas fa-server"></i> System
+                        </button>
+                        <button class="admin-tab" data-tab="live">
+                            <i class="fas fa-broadcast-tower"></i> Live Feed
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body admin-modal-body">
+                        
+                        
+                        <div class="admin-tab-content active" id="tab-overview">
+                            <div class="analytics-summary-cards">
+                                <div class="stat-card">
+                                    <div class="stat-icon"><i class="fas fa-sign-language"></i></div>
+                                    <div class="stat-info">
+                                        <h4 id="totalDetections">0</h4>
+                                        <p>Total Detections</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+                                    <div class="stat-info">
+                                        <h4 id="uniqueGestures">0</h4>
+                                        <p>Unique Gestures</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+                                    <div class="stat-info">
+                                        <h4 id="topGestureName">—</h4>
+                                        <p>Top Gesture</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="charts-container">
+                                <div class="chart-box">
+                                    <h3><i class="fas fa-poll"></i> Most Used Gestures</h3>
+                                    <div class="canvas-wrap">
+                                        <canvas id="topGesturesChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="chart-box">
+                                    <h3><i class="fas fa-history"></i> Usage Frequency (24h)</h3>
+                                    <div class="canvas-wrap">
+                                        <canvas id="usageHistoryChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="admin-tab-content" id="tab-users">
+                            <div class="admin-section-header">
+                                <h3><i class="fas fa-users"></i> Registered Users</h3>
+                                <p>Manage accounts and monitor individual activity</p>
+                            </div>
+                            <div class="table-container">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Activity</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTableBody">
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        
+                        <div class="admin-tab-content" id="tab-system">
+                            <div class="admin-section-header">
+                                <h3><i class="fas fa-heartbeat"></i> System Status</h3>
+                                <p>Environment and AI Model diagnostics</p>
+                            </div>
+                            <div class="system-grid" id="systemStatusGrid">
+                                
+                            </div>
+                        </div>
+
+                        
+                        <div class="admin-tab-content" id="tab-live">
+                            <div class="admin-section-header">
+                                <h3><i class="fas fa-stream"></i> Global Live Activity</h3>
+                                <p>Real-time stream of detections across the whole system</p>
+                            </div>
+                            <div class="live-feed-container" id="adminLiveFeed">
+                                <div class="empty-feed">No recent activity detected...</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <script src="/script.js"></script>
+
+</body>
+
+</html>

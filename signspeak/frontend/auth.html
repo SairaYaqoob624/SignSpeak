@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignSpeak - Choose Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at top right, #1a1a2e, #0f0f1a);
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            color: white;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .main-header {
+            margin-bottom: 3rem;
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(135deg, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .main-header p {
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* Role Selection Grid */
+        .role-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .role-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .role-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #4cc9f0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .role-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .user-icon { background: linear-gradient(135deg, #4cc9f0, #4361ee); color: white; }
+        .admin-icon { background: linear-gradient(135deg, #f72585, #b5179e); color: white; }
+
+        .role-card h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .role-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            line-height: 1.4;
+        }
+
+        /* Login Form Hidden Initially */
+        .login-box {
+            display: none;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .login-header {
+            margin-bottom: 25px;
+        }
+
+        .btn-back {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+
+        .btn-back:hover { color: white; }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            border-color: #4cc9f0;
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .user-btn { background: linear-gradient(135deg, #4cc9f0, #4361ee); }
+        .admin-btn { background: linear-gradient(135deg, #f72585, #b5179e); }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-status {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            min-height: 1.2rem;
+        }
+
+        .error { color: #f72585; }
+        .success { color: #4cc9f0; }
+
+        .signup-toggle {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            opacity: 0.6;
+        }
+
+        .signup-toggle span {
+            color: #4cc9f0;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .role-selection { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        
+        <div id="selectionScreen">
+            <div class="main-header">
+                <h1>SignSpeak Portal</h1>
+                <p>Welcome back! Please select your portal to continue.</p>
+            </div>
+
+            <div class="role-selection">
+                <div class="role-card" onclick="showLogin('user')">
+                    <div class="role-icon user-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3>User Portal</h3>
+                    <p>Learn sign language, practice gestures, and build sentences.</p>
+                </div>
+
+                <div class="role-card" onclick="showLogin('admin')">
+                    <div class="role-icon admin-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>Admin Portal</h3>
+                    <p>Monitor system usage, analyze performance, and manage data.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-box" id="loginBox">
+            <button class="btn-back" onclick="showSelection()">
+                <i class="fas fa-arrow-left"></i> Change Portal
+            </button>
+
+            <div class="login-header">
+                <h2 id="loginTitle">User Login</h2>
+                <p id="loginSubtitle">Please enter your credentials</p>
+            </div>
+
+            <form id="authForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="auth-btn" id="submitBtn">Login</button>
+            </form>
+
+            <div class="auth-status" id="authStatus"></div>
+
+            <div class="signup-toggle" id="signupSection">
+                New to SignSpeak? <span onclick="toggleMode()">Create an Account</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'user';
+        let isSignup = false;
+
+        function showLogin(role) {
+            currentRole = role;
+            document.getElementById('selectionScreen').style.display = 'none';
+            document.getElementById('loginBox').style.display = 'block';
+            
+            updateUI();
+        }
+
+        function showSelection() {
+            document.getElementById('selectionScreen').style.display = 'block';
+            document.getElementById('loginBox').style.display = 'none';
+            isSignup = false;
+            clearStatus();
+        }
+
+        function updateUI() {
+            const title = document.getElementById('loginTitle');
+            const submitBtn = document.getElementById('submitBtn');
+            const signupSection = document.getElementById('signupSection');
+            
+            if (currentRole === 'admin') {
+                title.innerText = 'Admin Login';
+                submitBtn.className = 'auth-btn admin-btn';
+                signupSection.style.display = 'none'; // Admins can't signup
+                isSignup = false;
+            } else {
+                title.innerText = isSignup ? 'Create User Account' : 'User Login';
+                submitBtn.className = 'auth-btn user-btn';
+                submitBtn.innerText = isSignup ? 'Sign Up' : 'Login';
+                signupSection.style.display = 'block';
+            }
+        }
+
+        function toggleMode() {
+            isSignup = !isSignup;
+            updateUI();
+            clearStatus();
+        }
+
+        function clearStatus() {
+            const status = document.getElementById('authStatus');
+            status.innerText = '';
+            status.className = 'auth-status';
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const status = document.getElementById('authStatus');
+            
+            const endpoint = isSignup ? '/api/signup' : '/api/login';
+            
+            status.innerText = 'Processing...';
+            status.className = 'auth-status';
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    status.innerText = data.message || 'Success!';
+                    status.className = 'auth-status success';
+                    
+                    if (!isSignup) {
+                        // Check if role matches for Admin
+                        if (currentRole === 'admin' && data.role !== 'admin') {
+                            status.innerText = 'Error: You do not have Admin privileges.';
+                            status.className = 'auth-status error';
+                            return;
+                        }
+                        
+                        setTimeout(() => window.location.href = '/', 1000);
+                    } else {
+                        setTimeout(() => toggleMode(), 1500);
+                    }
+                } else {
+                    status.innerText = data.message || 'Error occurred';
+                    status.className = 'auth-status error';
+                }
+            } catch (err) {
+                status.innerText = 'Network error';
+                status.className = 'auth-status error';
+            }
+        });
+    </script>
+</body>
+</html>
